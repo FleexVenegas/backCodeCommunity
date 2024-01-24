@@ -1,0 +1,30 @@
+CREATE DATABASE code_solution;
+
+USE code_solution;
+
+CREATE TABLE usuarios (
+    id VARCHAR(36) PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE questions(
+	id_question VARCHAR(36) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    tags TEXT NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+CREATE TABLE response(
+	id_response VARCHAR(36) PRIMARY KEY,
+    response TEXT NOT NULL,
+    id_user VARCHAR(36) NOT NULL,
+    id_question VARCHAR(36) NOT NULL,
+    FOREIGN KEY (id_user) REFERENCES users (id),
+    FOREIGN KEY (id_question) REFERENCES questions(id_question)
+);
