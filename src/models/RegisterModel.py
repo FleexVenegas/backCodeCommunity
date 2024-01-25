@@ -76,8 +76,8 @@ class RegisterModel:
         
         except Exception as ex:
             return str(ex)
+        
     @classmethod
-
     def update_register(self, register):
         try:
             connection = get_connection_MySQL()
@@ -90,6 +90,27 @@ class RegisterModel:
 
             connection.close()
             return affected_row
+        
+        except Exception as ex:
+            return str(ex)
+        
+
+    @classmethod
+    def login(self, user):
+        try:
+            connection = get_connection_MySQL()
+
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT id, username, email, password FROM users WHERE username = %s", (user))
+                row = cursor.fetchone()
+                
+                register = None
+                if row != None:
+                    register = Register(row[0], row[1], row[3], row[2], row[4])
+                    register = register.to_JSON()
+            
+            connection.close()
+            return register
         
         except Exception as ex:
             return str(ex)

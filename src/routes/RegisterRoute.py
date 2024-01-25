@@ -1,6 +1,13 @@
 import uuid
 from flask import Blueprint, request, jsonify
-from utils.Json import Tools
+from flask_bcrypt import Bcrypt
+from flask_cors import CORS
+
+# Tools
+from utils.Tools import Tools
+from utils.EncryptPasswords import Encrypt_password
+
+
 
 # Intities
 from models.entities.Register import Register
@@ -9,6 +16,8 @@ from models.entities.Register import Register
 from models.RegisterModel import RegisterModel
 
 main = Blueprint("register_blueprint", __name__)
+CORS(main, supports_credentials=True)
+bcrypt = Bcrypt()
 
 
 @main.route("/get-users", methods=['GET'])
@@ -41,18 +50,24 @@ def add_user():
         _string = request.form['formUser']
         _dict = Tools.convert_json(_string)
 
-        user = _dict['username']
         email = _dict['email']
+        user = _dict['user']
         password = _dict['password']
+        confirm_password = _dict['confirmPassword']
         id = uuid.uuid4()
 
-        register = Register(str(id), user, email, password)
-        affected_row = RegisterModel.add_register(register)
+        if Tools.compare_password(password, confirm_password):
+            pw_hash = Encrypt_password.encrypt_password(password)
 
-        if affected_row == 1:
-            return jsonify(register.id)
+            register = Register(str(id), user, email, pw_hash)
+            affected_row = RegisterModel.add_register(register)
+
+            if affected_row == 1:
+                return jsonify({"message": "Successful registration"}), 200
+            else:
+                return jsonify({"message": "Error on insert"}), 500
         else:
-            return jsonify({"message": "Error on insert"}), 500
+            return jsonify({"message": "Passwords do not match"}), 400
 
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
