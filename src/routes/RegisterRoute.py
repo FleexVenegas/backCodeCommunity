@@ -50,7 +50,7 @@ def add_user():
         _string = request.form['formUser']
         _dict = Tools.convert_json(_string)
 
-        email = _dict['email']  # Este es un comentario
+        email = _dict['email']
         user = _dict['user']
         password = _dict['password']
         confirm_password = _dict['confirmPassword']

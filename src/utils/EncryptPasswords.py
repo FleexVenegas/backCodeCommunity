@@ -9,6 +9,3 @@ class Encrypt_password:
         pw_hash = bcrypt.generate_password_hash(password)
         return pw_hash
     
-    @classmethod
-    def check_password(self, hash_password, password):
-        return bcrypt.check_password_hash(hash_password, password)

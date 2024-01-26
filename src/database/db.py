@@ -11,4 +11,4 @@ def get_connection_MySQL():
             db=config('MYSQL_DATABASE')
         )
     except Exception as ex:
-        return f"Error al conectarse a la base de datos {str(ex)}"
+        return {"message": f"Error al conectarse a la base de datos {str(ex)}", "status": 500}
