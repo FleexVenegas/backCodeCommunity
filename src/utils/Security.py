@@ -12,12 +12,13 @@ class Security:
     def generate_token(self, authenticated_user):
         payload = {
             "iat": datetime.datetime.now(tz=self.tz),
-            "exp": datetime.datetime.now(tz=self.tz) + datetime.timedelta(minutes=30),
+            "exp": datetime.datetime.now(tz=self.tz) + datetime.timedelta(weeks=1),
             "username": authenticated_user.username,
         }
 
         return jwt.encode(payload, self.secret, algorithm="HS256")
 
+    @classmethod
     def verify_token(self, headers):
         if 'Authorization' in headers.keys():
             authorization = headers['Authorization']

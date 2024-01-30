@@ -2,7 +2,7 @@ from flask import Flask
 from config import config
 
 # Routes
-from routes import Question
+from routes import QuestionRoute
 from routes import RegisterRoute
 from routes import AuthRoutes
 
@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     # Blueprint's
     app.register_blueprint(RegisterRoute.main, url_prefix="/api/user/")
-    app.register_blueprint(Question.main, url_prefix="/api/community")
+    app.register_blueprint(QuestionRoute.main, url_prefix="/api/community")
     app.register_blueprint(AuthRoutes.main, url_prefix="/api/auth")
 
     # Error handlers
