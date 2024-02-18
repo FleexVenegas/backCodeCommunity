@@ -21,11 +21,13 @@ def add_question():
         question_string = request.form["question"]
         question_dict = Tools.convert_json(question_string)
         question_id = uuid.uuid4()
+        cookies = request.cookies.get("116111en")
+        cookie_user = request.cookies.get("105d")
 
-        authorization = Security.verify_token(request.headers)
+        authorization = Security.verify_token(cookies)
 
         if authorization:
-            question = Question(str(question_id), question_dict['title'], question_dict['description'], question_dict['tags'], question_dict['id_user'])
+            question = Question(str(question_id), question_dict['title'], question_dict['description'], question_dict['tags'], cookie_user)
             
             affected_row = QuestionModel.add_question(question)
 
@@ -59,10 +61,24 @@ def get_question(id):
     try:
         question = QuestionModel.get_question(id) 
         if question != None:
-            return jsonify(question), 200
+            return jsonify({"data": question}), 200
         
         else:
             return jsonify({"message": "Question not found"}), 404
+
+    except Exception as ex:
+        return jsonify({"message": str(ex)})
+    
+
+@main.route('/get-count/', methods=['GET'])
+def count_question_answer():
+    try:
+        id_user = request.cookies.get("105d")
+
+        total_questions = QuestionModel.count_question(id_user)
+        total_responses = QuestionModel.count_response(id_user)
+
+        return jsonify({"question_total": total_questions, "answer_total": total_responses})
 
     except Exception as ex:
         return jsonify({"message": str(ex)})

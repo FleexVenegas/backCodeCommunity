@@ -3,7 +3,7 @@ from utils.Tools import Tools
 from utils.Security import Security
 from models.entities.User import User
 from models.LoginModel import LoginModel
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from utils.CryptoGraphy.Cryptography import EncryptionManager
 
 main = Blueprint("auth_blueprint", __name__)
@@ -24,9 +24,20 @@ def validate_credentials():
 
                 encrypt_user = EncryptionManager()
                 encrypt_user = encrypt_user.encrypt_data(logged_user.username)
+
                 encode_token = Security.generate_token(logged_user)
 
-                return jsonify({"authToken": encode_token, "message": "Successful Authentication", "id": logged_user.id , "username": encrypt_user.decode('utf-8')}), 200
+                cookies_dict = {
+                    "116111en": encode_token,
+                    "105d": logged_user.id,
+                    "117er": encrypt_user.decode('utf-8')
+                }
+
+                _make_response = make_response({"message": "Successful Authentication", "id": logged_user.id})
+                for cookie_name, cookie_value in cookies_dict.items():
+                    _make_response.set_cookie(cookie_name, value=cookie_value, httponly=True, samesite="None", secure=True)
+
+                return _make_response, 200
             
             else:
                 return jsonify({"message": "Invalid Password"}), 400
@@ -34,41 +45,57 @@ def validate_credentials():
         else:
             return jsonify({"message": "User no found"}), 400
     except Exception as ex:
-        return jsonify({"message": str(ex)})
-
-    
-    # return jsonify({})
+        return jsonify({"message": str(ex)}), 500
 
 
 @main.route('/validate-akn', methods=['GET'])
 def validate_token():
     try:
-        authorization = Security.verify_token(request.headers)
+        cookies = request.cookies.get('116111en')
+        authorization = Security.verify_token(cookies)
 
         if authorization:
             return jsonify({"message": "Authorized access"}), 200
         else:
             return jsonify({"message": "Unauthorized access"}), 401
-        
+
     except Exception as ex:
         return jsonify({"message": str(ex)})
     
 
-@main.route('/decrypt-user', methods=['POST'])
+
+@main.route('/decrypt-user', methods=['GET'])
 def decrypt_user():
     try:
-        user_string = request.form["user"]
-        user = Tools.convert_json(user_string)
-        
-        if user != None:
-            encrypt_user = EncryptionManager()
-            encrypt_user = encrypt_user.decrypt_data(user['username'])
+        getCookie_aut = request.cookies.get("116111en")
+        authorization = Security.verify_token(getCookie_aut)
 
-            return jsonify(encrypt_user)
-        else:
-            return jsonify({"message": "Error"})
+        if authorization:
+            get_user = request.cookies.get("117er")
+
+            if get_user != None:
+                encrypt_user = EncryptionManager()
+                encrypt_user = encrypt_user.decrypt_data(get_user)
+
+                return jsonify(encrypt_user)
+            else:
+                return jsonify({"message": "Error"})
         
     except Exception as ex:
          jsonify({"message": str(ex)})
+
+
+
+@main.route('/logout', methods=['GET'])
+def logOut():
+    try:
+
+        response = make_response({"message": "Successful logout"})
+        response.delete_cookie("116111en", httponly=True, samesite="None", secure=True)
+
+        return response, 200
+    
+    except Exception as ex:
+        return jsonify({"message": str(ex)})
     
 
